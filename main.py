@@ -1,3 +1,8 @@
+import requests
+
+API_KEY = "261c1e2701a652fe4cb9e22b5668ab43"
+BASE_URL = "https://api.themoviedb.org/3/search/movie"
+
 def show_menu():
     print("\n=== Movie Recommendation CLI ===")
     print("1. Search Movies")
@@ -7,17 +12,32 @@ def show_menu():
 def search_movie():
     title = input("Enter movie title to search: ")
     # Dummy data simulating API response
-    dummy_results = [
-        {"title": "The Matrix", "year": 1999, "rating": 8.7},
-        {"title": "Matrix Reloaded", "year": 2003, "rating": 7.2},
-        {"title": "Matrix Revolutions", "year": 2003, "rating": 6.8},
-        {"title": "The Matrix Resurrections", "year": 2021, "rating": 5.7},
-        {"title": "Inception", "year": 2010, "rating": 8.8}
-    ]
+    params = {
+        "api_key": API_KEY,
+        "query": title,
+        "language": "en-US",
+        "page": 1,
+        "include_adult": False
+    }
     
-    print("\nSearch results for '{}':".format(title))
-    for i, movie in enumerate(dummy_results[:5],start=1):
-        print("{}. {} ({}) - Rating: {}".format(i, movie['title'], movie['year'], movie['rating']))
+    response = requests.get(BASE_URL, params=params)
+    if response.status_code != 200:
+        print("Error fetching data from TMDb API")
+        return
+    
+    data = response.json()
+    results = data.get("results", [])
+    
+    if not results:
+        print(f"No results found for '{title}'.")
+        return
+    
+    print(f"\nSearch results for '{title}':")
+    for i, movie in enumerate(results[:5], start=1):
+        movie_title = movie.get("title", "N/A")
+        release_date = movie.get("release_date", "N/A")
+        rating = movie.get("vote_average", "N/A")
+        print("{}. {} ({}) - Rating: {}".format(i, movie_title, release_date, rating))
     
 def main():
     while True:
